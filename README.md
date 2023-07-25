@@ -18,22 +18,35 @@ The Application Under Test (AUT) that is used for this project is Contact List A
 ## 👨‍🎓What is the knowledge used for this project?👨‍🎓
 - **cucumber**: feature files, step defintions, cucumber regrex, data table, cucumber options, hooks, tags, cucumber report
 - Use **scenario outline** and examples in feature files for **data-driven testing**
-- Use **page object model (POM)** to manage the elements and methods of each web page
-- Use projeclombok to create constuctors and take care of getters and setters of **POJO** classes
+- Use **Page Object Model (POM)** to manage the elements and methods of each web page
+- Use **projeclombok** to create constuctors and take care of getters and setters of **POJO** classes
 - Use **Rest-Assured** to setup and clean up test data at **API** level
 - **WebDriverManager** to manage web drivers
 
 ## 🏗️Project structure and components🏗️
-<img width="204" alt="image" src="https://github.com/anvoqa/cucumber-selenium-java/assets/128540316/c2c9f638-1634-43c8-81b8-6226aef36579"> 
+<img width="947" alt="image" src="https://github.com/anvoqa/cucumber-selenium-java/assets/128540316/37aa113f-dbd7-47b9-afb7-bf2d1b4a8419">
 
 - `src/main/java`: Contains BasedPage (selenium wrapper), page objects and POJO classes
 - `src/test/java`
   - `apiHelpers`: Contains classes having API methods to set up and clean up test data. These methods are implemented using Rest-Assured library
   -  `cucumberOptions`:  Contains TestContext (used to share the context across step definition classes), DriverManager (with methods to create and quit drivers) and TestRunner class - the configuration of test execution
   -  `features`: Contains feature files used to define the test scenarios
-  -  `stepDefinitions`: Contains classes used to map steps from feature files to selenium java code to drive webdriver to interact with web elements
+  -  `stepDefinitions`: Contains classes used to map steps from feature files to selenium java code to drive webdriver to interact with web elements. Each step definition class also contains only steps of one web page and mapping with one respective page object
   - `pom.xml`: Used to manage project dependencies 
-- `Cucumber html report` is being used for reporting and can be found under folder `/target/site/cucumber-reporting/cucumber-html-reports`. To view full report, use `overview-features.html` file. The report looks like as below
+
+## 🏃How the test run🏃
+<img width="739" alt="image" src="https://github.com/anvoqa/cucumber-selenium-java/assets/128540316/3cad3763-a2f4-472d-9d43-dd3084142058">
+
+- Starting the test execution by Maven command `mvn test -DBROWSER="chrome"`, maven surfile pluggin is configured to run the **TestRunner.java** class.
+- In the TestRunner file:
+  - The **features** cucumberOptions is used to look for the feature files and **glues** is used to to map features with step definitions
+  - The **tags = "@users or @contact"** option will make the tests having each tag run in parallel
+- Before the first scenario is executed, the chrome driver is created through the **Driver Manager** class, and the **Page Generator Manager (PGM)** which is used to create page object instances in the step definition classes is instantiated. Since the test scenario will use multiple step definition classes, **PicoContainer** library and **singleton design** are used for instantiating these objects once to share the **Test Context** between multiple step definition classes
+- After all the set up is done, the first step of scenario will be executed. A step from feature file will map with a method in a step defnition class using **cucumber regex**
+- Inside a method of step definition class, it will call the methods through a **page object** class to perform actions.
+- When a method of a page object is called, it will call the Selenium functions from parent **BasePage** class and pass the xpath defined in the page object, along with the test data from parameters (if any) to those functions to interact with the web elements of the application.
+- When all steps of the scenario are executed, the **@After hook** is called to quit the driver
+- After all tests are executed, **HTML report** is generated using cucumber reporting library. HTML uses default cucumber.json report as the input file
 
 ## Cucumber HTML Report
 Cucumber html report is being used for reporting and can be found under folder `/target/site/cucumber-reporting/cucumber-html-reports`. 
@@ -45,11 +58,8 @@ The report looks like as below
 <img width="1092" alt="image" src="https://github.com/anvoqa/cucumber-selenium-java/assets/128540316/de6021ff-797b-4bf1-8e33-6816067fb95e">
 <img width="930" alt="image" src="https://github.com/anvoqa/cucumber-selenium-java/assets/128540316/f39ea840-e76f-46e6-bee1-c9aca717c48f">
 
-## 🏃How the test run🏃
-
-
 ## 💻How to clone this project and run tests on your local?💻
-- Install java
+- Install java, Maven and set the environment paths
 - Clone this repo to a folder
 - Open CLI and cd to project folder
 - Run test using command `mvn test -DBROWSER="<chrome|headless_chrome|firefox|edge"`
